@@ -14,6 +14,13 @@ $ORIGIN <%= @zone["origin"] %>.
 <%= "#{name}	IN	A	#{addr}" %>
 <% end end end %>
 
+<% if @zone.has_key?("reverse") then @zone["reverse"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |ip| %>
+<%= "#{name}	IN	PTR	#{ip}." %>
+<% end else %>
+<%= "#{name}	IN	PTR	#{addr}." %>
+<% end end end %>
+
 <% if @zone.has_key?("hosts6") then @zone["hosts6"].each do |name,addr| %>
 <% if addr.kind_of?(Array) then addr.each do |ip| %>
 <%= "#{name}	IN	AAAA	#{ip}" %>
