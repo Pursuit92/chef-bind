@@ -1,0 +1,53 @@
+$TTL <%= @zone["ttl"] %>
+$ORIGIN <%= @zone["origin"] %>.
+<%= @zone["origin"] %>.	IN SOA	<%= @zone["primary_ns"] %>. <%= @zone["contact"] %>. (
+					<%= @zone["serial"] %>	; serial
+					<%= @zone["refresh"] %>	; refresh
+					<%= @zone["retry"] %>	; retry
+					<%= @zone["expire"] %>	; expire
+					<%= @zone["minimum"] %> )	; minimum
+
+<% if @zone.has_key?("hosts") then @zone["hosts"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |ip| %>
+<%= "#{name}	IN	A	#{ip}" %>
+<% end else %>
+<%= "#{name}	IN	A	#{addr}" %>
+<% end end end %>
+
+<% if @zone.has_key?("hosts6") then @zone["hosts6"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |ip| %>
+<%= "#{name}	IN	AAAA	#{ip}" %>
+<% end else %>
+<%= "#{name}	IN	AAAA	#{addr}" %>
+<% end end end %>
+
+<% if @zone.has_key?("aliases") then @zone["aliases"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |a| %>
+<%= "#{a}	IN	CNAME	#{name}" %>
+<% end else %>
+<%= "#{addr}	IN	CNAME	#{name}" %>
+<% end end end %>
+
+<% if @zone.has_key?("mailservers") then @zone["mailservers"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |a| %>
+<%= "#{name}	IN	MX	#{a["priority"]}	#{a["address"]}" %>
+<% end else %>
+<%= "#{name}	IN	MX	#{addr["priority"]}	#{addr["address"]}" %>
+<% end end end %>
+
+<% if @zone.has_key?("nameservers") then @zone["nameservers"].each do |name,addr| %>
+<% if addr.kind_of?(Array) then addr.each do |a| %>
+<%= "#{name}	IN	NS	#{a}" %>
+<% end else %>
+<%= "#{name}	IN	NS	#{addr}" %>
+<% end end end %>
+
+<% if @zone.has_key?("text") then @zone["text"].each do |name,text| %>
+<%= "#{name}	TXT	\"#{text}\"" %>
+<% end %>
+<% end %>
+
+<% if @zone.has_key?("generate") then @zone["generate"].each do |range,data| %>
+<%= "$GENERATE	#{range}	#{data["lhs"]}$#{data["mid"]}$#{data["rhs"]}" %>
+<% end %>
+<% end %>
