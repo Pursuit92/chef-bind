@@ -28,7 +28,6 @@ db.each do |name|
 				zone_data[item] = val
 			end
 			zone_data["origin"] = zone["zone"]
-			print zone_data
 			template "/var/named/#{zone["zone"]}" do
 				source "zone.erb"
 				owner "named"
