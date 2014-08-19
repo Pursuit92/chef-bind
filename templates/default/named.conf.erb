@@ -7,6 +7,14 @@
 // See /usr/share/doc/bind*/sample/ for example named configuration files.
 //
 
+<% @acls.each do |name,matches| %>
+acl <%= name %> {
+	<% matches.each do |match| %>
+	<%= "#{match};" %>
+	<% end %>
+};
+<% end %>
+
 options {
 	listen-on port 53 { <%= node[:ipaddress] %>; };
 	listen-on-v6 port 53 { <%= node[:ip6address] %>; };
@@ -43,21 +51,37 @@ logging {
         };
 };
 
-<% @zones.each do |name,conf| %>
-zone "<%= name %>" IN {
-	<% conf.each do |item,value| %>
-	<%= "#{item} #{value};" %>
+<% @views.each do |name,view| %>
+view "<%= name %>" {
+	match-clients {
+	<% view["match_clients"].each do |match| %>
+		<%= "#{match};" %>
 	<% end %>
-	file "<%= "/var/named/#{name}" %>";
+	};
+
+	<% view["options"].each do |opt,val| %>
+	<% if val.kind_of?(Array) then %>
+	<%= opt %> { <% val.each do |item| %> <%= "#{item};" %> <% end %> };
+	<% else %>
+	<%= opt %> <%= "#{val};" %>
+	<% end %>
+
+	<% end %>
+	<% view["zones"].each do |name,conf| %>
+	zone "<%= name %>" IN {
+		<% conf.each do |item,value| %>
+		<% if item != "file_name" then %>
+		<%= "#{item} #{value};" %>
+		<% end %>
+		<% end %>
+		file "<%= "/var/named/#{conf["file_name"]}" %>";
+	};
+	<% end %>
+
 };
 <% end %>
 
-zone "." IN {
-	type hint;
-	file "named.ca";
-};
-
-include "/etc/named.rfc1912.zones";
+// include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 include "/etc/named.conf.local";
 
